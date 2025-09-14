@@ -20,12 +20,14 @@
             <button type="submit">Add User</button>
         </form>
 
-        <button onclick="loadUsers()" class="load-btn">Load Users</button>
+        <button id="loadUsersBtn" class="load-btn">Load Users</button>
         
         <h2>Users:</h2>
         <div id="usersList"></div>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <!-- Load Supabase from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
 </body>
 </html>
