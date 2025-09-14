@@ -1,195 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supabase Login</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Your existing CSS remains the same */
+        body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        input { width: 100%; padding: 8px; margin-top: 5px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .error { color: red; margin-top: 10px; }
+        .success { color: green; margin-top: 10px; }
+        .dashboard { display: none; }
     </style>
 </head>
 <body>
-    <!-- Your existing HTML remains the same -->
+    <div id="login-form">
+        <h2>Login</h2>
+        <div class="form-group">
+            <input type="email" id="email" placeholder="Email" required>
+        </div>
+        <div class="form-group">
+            <input type="password" id="password" placeholder="Password" required>
+        </div>
+        <button onclick="login()">Login</button>
+        <div id="message"></div>
+    </div>
+
+    <div id="dashboard" class="dashboard">
+        <h2>Welcome, <span id="user-email"></span></h2>
+        <button onclick="logout()">Logout</button>
+    </div>
 
     <script>
-        // DOM Elements
-        const messageEl = document.getElementById('message');
-        const loginForm = document.getElementById('login-form');
-        const loginContainer = document.getElementById('login-container');
-        const dashboard = document.getElementById('dashboard');
-        const welcomeText = document.getElementById('welcome-text');
-        const signoutBtn = document.getElementById('signout-btn');
-        const navItems = document.querySelectorAll('.nav-item');
-        const pages = document.querySelectorAll('.page');
-        
-        // Password toggle functionality
-        document.getElementById('login-password-toggle').addEventListener('click', function() {
-            const input = document.getElementById('login-password');
-            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-            input.setAttribute('type', type);
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-        });
-        
-        // Login form submission
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearMessage();
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const message = document.getElementById('message');
             
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            // Show loading state
-            setButtonLoading('login', true);
+            message.className = '';
+            message.textContent = 'Logging in...';
             
             try {
-                // Call our server-side API for authentication
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch('/api/login', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email, password }),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
                 });
-                
-                // Check if response is JSON
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Server returned unexpected response: ${text.substring(0, 100)}`);
-                }
                 
                 const data = await response.json();
                 
-                if (!response.ok) {
-                    throw new Error(data.error || `Login failed with status ${response.status}`);
+                if (response.ok) {
+                    showDashboard(data.user);
+                } else {
+                    message.className = 'error';
+                    message.textContent = data.error || 'Login failed';
                 }
-                
-                showMessage('Login successful!', 'success');
-                showDashboard(data.user);
             } catch (error) {
-                console.error('Login error:', error);
-                showMessage(error.message, 'error');
-            } finally {
-                setButtonLoading('login', false);
+                message.className = 'error';
+                message.textContent = 'Network error: ' + error.message;
             }
-        });
+        }
         
-        // Sign out
-        signoutBtn.addEventListener('click', async () => {
+        async function logout() {
             try {
-                const response = await fetch('/api/auth/logout', {
-                    method: 'POST',
-                });
-                
-                // Check if response is JSON
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Server returned unexpected response: ${text.substring(0, 100)}`);
-                }
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'Logout failed');
-                }
-                
-                dashboard.style.display = 'none';
-                loginContainer.style.display = 'block';
-                
-                showMessage('You have been signed out', 'success');
-                
+                await fetch('/api/logout', { method: 'POST' });
+                showLogin();
             } catch (error) {
                 console.error('Logout error:', error);
-                showMessage(error.message, 'error');
             }
-        });
+        }
         
-        // Navigation menu click handler
-        navItems.forEach(item => {
-            item.addEventListener('click', function() {
-                // Update active navigation item
-                navItems.forEach(navItem => navItem.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Show corresponding page
-                const pageId = this.getAttribute('data-page');
-                pages.forEach(page => {
-                    page.classList.remove('active');
-                    if (page.id === pageId) {
-                        page.classList.add('active');
-                    }
-                });
-            });
-        });
+        function showDashboard(user) {
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+        
+        function showLogin() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('message').textContent = '';
+        }
         
         // Check if user is already logged in
         async function checkAuth() {
             try {
-                const response = await fetch('/api/auth/session');
-                
-                // Check if response is JSON
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    console.error('Session endpoint returned non-JSON response');
-                    return;
-                }
-                
+                const response = await fetch('/api/session');
                 const data = await response.json();
-                
                 if (response.ok && data.user) {
                     showDashboard(data.user);
                 }
             } catch (error) {
-                console.error('Error checking auth:', error);
+                console.error('Auth check failed:', error);
             }
         }
         
-        // Show dashboard
-        function showDashboard(user) {
-            const username = user.email.split('@')[0];
-            welcomeText.textContent = `Welcome, ${username}`;
-            dashboard.style.display = 'flex';
-            loginContainer.style.display = 'none';
-        }
-        
-        // Show message
-        function showMessage(message, type) {
-            messageEl.textContent = message;
-            messageEl.className = `message ${type}`;
-            
-            // Auto hide after 5 seconds
-            setTimeout(() => {
-                clearMessage();
-            }, 5000);
-        }
-        
-        // Clear message
-        function clearMessage() {
-            messageEl.textContent = '';
-            messageEl.className = 'message';
-        }
-        
-        // Set button loading state
-        function setButtonLoading(buttonType, isLoading) {
-            const textEl = document.getElementById(`${buttonType}-text`);
-            const spinnerEl = document.getElementById(`${buttonType}-spinner`);
-            const buttonEl = document.getElementById(`${buttonType}-btn`);
-            
-            if (isLoading) {
-                textEl.style.display = 'none';
-                spinnerEl.style.display = 'inline-block';
-                buttonEl.disabled = true;
-            } else {
-                textEl.style.display = 'inline-block';
-                spinnerEl.style.display = 'none';
-                buttonEl.disabled = false;
-            }
-        }
-        
-        // Initialize
         checkAuth();
     </script>
 </body>
