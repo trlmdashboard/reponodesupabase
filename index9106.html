@@ -405,7 +405,7 @@
             justify-content: space-around;
             padding: 0.5rem 0;
             z-index: 1000;
-            height: 55px;
+            height: 60px;
         }
 
         .nav-item {
@@ -432,46 +432,45 @@
         .nav-item i {
             font-size: 1.1rem;
             margin-bottom: 0.2rem;
-            transition: transform 0.3s ease, color 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
             position: relative;
             z-index: 2;
         }
 
         .nav-item span {
-            transition: transform 0.3s ease, color 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
             position: relative;
             z-index: 2;
         }
 
-        /* Active state animation */
-        .nav-item.active i {
-            transform: translateY(-2px) scale(1.2);
-            color: white;
-        }
-
-        .nav-item.active span {
-            transform: translateY(1px);
-            font-weight: 600;
-            color: white;
-        }
-
-        /* Background animation element */
+        /* Bubble animation effect */
         .nav-item::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border-radius: 8px;
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
             z-index: 1;
         }
 
         .nav-item.active::before {
-            transform: translateY(0);
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .nav-item.active i {
+            transform: translateY(-5px) scale(1.2);
+            color: white;
+        }
+
+        .nav-item.active span {
+            transform: translateY(3px);
+            font-weight: 600;
+            color: white;
         }
 
         /* Hover effect for non-active items */
@@ -488,44 +487,25 @@
             color: var(--primary);
         }
 
-        /* Pulse animation for active item */
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        /* Ripple effect animation */
+        @keyframes ripple {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(2);
+                opacity: 0;
+            }
         }
 
-        .nav-item.active {
-            animation: pulse 1.5s ease-in-out;
-        }
-
-        /* Swipe indicator */
-        .swipe-indicator {
+        .nav-item .ripple {
             position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
             border-radius: 50%;
-            background: rgba(59, 130, 246, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 50;
-        }
-        
-        .swipe-indicator.left {
-            left: 10px;
-        }
-        
-        .swipe-indicator.right {
-            right: 10px;
-        }
-        
-        .swipe-indicator.visible {
-            opacity: 1;
+            background-color: rgba(59, 130, 246, 0.4);
+            transform: translate(-50%, -50%) scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
         }
 
         /* Mobile Responsiveness */
@@ -886,13 +866,16 @@
             }
         }
         
-        // Navigation functionality
+        // Navigation functionality with ripple effect
         function setupNavigation() {
             const navItems = document.querySelectorAll('.nav-item');
             const contentSections = document.querySelectorAll('.content-section');
             
             navItems.forEach(item => {
-                item.addEventListener('click', function() {
+                item.addEventListener('click', function(e) {
+                    // Create ripple effect
+                    createRippleEffect(e, this);
+                    
                     // Update active navigation item
                     navItems.forEach(nav => {
                         nav.classList.remove('active');
@@ -909,7 +892,39 @@
             });
         }
         
-        // Swipe navigation functionality - FIXED
+        // Create ripple effect on click
+        function createRippleEffect(event, element) {
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            
+            const diameter = Math.max(element.clientWidth, element.clientHeight);
+            const radius = diameter / 2;
+            
+            const rect = element.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            ripple.style.width = ripple.style.height = `${diameter}px`;
+            ripple.style.left = `${x - radius}px`;
+            ripple.style.top = `${y - radius}px`;
+            
+            // Remove any existing ripple
+            const existingRipple = element.querySelector('.ripple');
+            if (existingRipple) {
+                existingRipple.remove();
+            }
+            
+            element.appendChild(ripple);
+            
+            // Remove ripple after animation completes
+            setTimeout(() => {
+                if (ripple.parentElement === element) {
+                    ripple.remove();
+                }
+            }, 600);
+        }
+        
+        // Swipe navigation functionality
         function setupSwipeNavigation() {
             const dashboardContent = document.getElementById('dashboard-content');
             const navItems = document.querySelectorAll('.nav-item');
