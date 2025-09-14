@@ -1,7 +1,10 @@
+
+
 {
   "functions": {
-    "api/save-data.js": {
+    "api/*.js": {
       "maxDuration": 10
     }
-  }
+  },
+  "installCommand": "npm install"
 }
