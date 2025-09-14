@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #64748b;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --success: #10b981;
+            --error: #ef4444;
+            --border: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f5f9;
+            color: var(--dark);
+            line-height: 1.6;
+            padding-bottom: 70px; /* Reduced space for bottom nav */
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            transition: var(--transition);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            color: var(--dark);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .message {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .error {
+            background-color: #fee2e2;
+            color: var(--error);
+        }
+
+        .success {
+            background-color: #d1fae5;
+            color: var(--success);
+        }
+
+        /* Dashboard Styles */
+        .dashboard {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Reduced height header */
+        .dashboard-header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 0.75rem 1.5rem; /* Reduced padding */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 60px; /* Fixed height */
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; /* Reduced gap */
+        }
+
+        .brand i {
+            font-size: 1.25rem; /* Smaller icon */
+            color: var(--primary);
+        }
+
+        .brand h2 {
+            font-size: 1.1rem; /* Smaller font */
+            color: var(--dark);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* Reduced gap */
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-info .email {
+            font-size: 0.75rem; /* Smaller font */
+            color: var(--secondary);
+        }
+
+        .user-info .name {
+            font-size: 0.875rem; /* Smaller font */
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            padding: 0.4rem 0.8rem; /* Smaller button */
+            background-color: white;
+            color: var(--error);
+            border: 1px solid var(--error);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.875rem;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--error);
+            color: white;
+        }
+
+        .dashboard-content {
+            padding: 1.5rem;
+        }
+
+        .content-header {
+            margin-bottom: 1.5rem; /* Reduced margin */
+        }
+
+        .content-header h1 {
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .content-header p {
+            color: var(--secondary);
+            font-size: 0.875rem; /* Smaller font */
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .card p {
+            color: var(--secondary);
+            font-size: 0.875rem;
+        }
+
+        .card-icon {
+            display: inline-flex;
+            padding: 0.5rem;
+            background-color: #dbeafe;
+            color: var(--primary);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .data-table th, .data-table td {
+            padding: 0.875rem; /* Slightly reduced padding */
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .data-table th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            font-size: 0.875rem; /* Smaller font */
+        }
+        
+        .data-table td {
+            font-size: 0.875rem; /* Smaller font */
+        }
+        
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem; /* Reduced gap */
+            margin-bottom: 1.5rem; /* Reduced margin */
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 1.25rem; /* Reduced padding */
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem; /* Slightly smaller */
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Reduced height bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem 0; /* Reduced padding */
+            z-index: 1000;
+            height: 60px; /* Fixed height */
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--secondary);
+            font-size: 0.7rem; /* Smaller font */
+            transition: var(--transition);
+            padding: 0.4rem; /* Reduced padding */
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            max-width: 80px; /* Limit width */
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background-color: #dbeafe;
+        }
+
+        .nav-item i {
+            font-size: 1.1rem; /* Slightly smaller icons */
+            margin-bottom: 0.2rem; /* Reduced margin */
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 0.6rem 1rem; /* Further reduced padding */
+            }
+            
+            .brand h2 {
+                font-size: 1rem;
+            }
+            
+            .dashboard-content {
+                padding: 1rem;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .user-info .name {
+                display: none;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .data-table {
+                font-size: 0.875rem;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 0.75rem;
+            }
+            
+            .bottom-nav {
+                height: 60px; /* Maintain fixed height */
+            }
+            
+            .nav-item {
+                font-size: 0.65rem; /* Even smaller font */
+            }
+            
+            .nav-item i {
+                font-size: 1rem; /* Even smaller icons */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 1.5rem;
+            }
+            
+            .content-header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .card {
+                padding: 1.25rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .user-info .email {
+                display: none; /* Hide email on very small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Page -->
+        <div class="login-container" id="login-form">
+            <div class="login-card">
+                <div class="logo">
+                    <i class="fas fa-database"></i>
+                    <h1>Supabase Login</h1>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+                
+                <button class="btn" onclick="login()">Login</button>
+                
+                <div id="message" class="message"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <header class="dashboard-header">
+                <div class="brand">
+                    <i class="fas fa-database"></i>
+                    <h2>Supabase Dashboard</h2>
+                </div>
+                
+                <div class="user-menu">
+                    <div class="user-info">
+                        <div class="name">Welcome, <span id="user-name">User</span></div>
+                        <div class="email" id="user-email"></div>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </header>
+            
+            <div class="dashboard-content">
+                <!-- Home Section -->
+                <div class="content-section active" id="home-section">
+                    <div class="content-header">
+                        <h1>Dashboard Overview</h1>
+                        <p>Welcome back! Here's what's happening today.</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">24</div>
+                            <div class="stat-label">New Orders</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$3,865</div>
+                            <div class="stat-label">Total Revenue</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">142</div>
+                            <div class="stat-label">Products Sold</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$450</div>
+                            <div class="stat-label">Incentives Earned</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-grid">
+                        <div class="card">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3>Performance</h3>
+                            <p>View your application performance metrics and identify areas for improvement.</p>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <h3>Database</h3>
+                            <p>Manage your database tables, run queries, and monitor database health.</p>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3>Authentication</h3>
+                            <p>Configure authentication settings and manage user access controls.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Products Section -->
+                <div class="content-section" id="products-section">
+                    <div class="content-header">
+                        <h1>Product Management</h1>
+                        <p>Manage your product inventory and details</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Product List</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Wireless Headphones</td>
+                                    <td>Electronics</td>
+                                    <td>$129.99</td>
+                                    <td>42</td>
+                                </tr>
+                                <tr>
+                                    <td>Running Shoes</td>
+                                    <td>Footwear</td>
+                                    <td>$89.99</td>
+                                    <td>27</td>
+                                </tr>
+                                <tr>
+                                    <td>Smart Watch</td>
+                                    <td>Electronics</td>
+                                    <td>$199.99</td>
+                                    <td>15</td>
+                                </tr>
+                                <tr>
+                                    <td>Water Bottle</td>
+                                    <td>Accessories</td>
+                                    <td>$24.99</td>
+                                    <td>68</td>
+                                </tr>
+                                <tr>
+                                    <td>Backpack</td>
+                                    <td>Accessories</td>
+                                    <td>$59.99</td>
+                                    <td>33</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Orders Section -->
+                <div class="content-section" id="orders-section">
+                    <div class="content-header">
+                        <h1>Order Management</h1>
+                        <p>View and manage customer orders</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Recent Orders</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#ORD-7281</td>
+                                    <td>John Smith</td>
+                                    <td>Jun 28, 2023</td>
+                                    <td>$249.97</td>
+                                    <td>Shipped</td>
+                                </tr>
+                                <tr>
+                                    <td>#ORD-7280</td>
+                                    <td>Emma Johnson</td>
+                                    <td>Jun 27, 2023</td>
+                                    <td>$89.99</td>
+                                    <td>Delivered</td>
+                                </tr>
+                                <tr>
+                                    <td>#ORD-7279</td>
+                                    <td>Michael Brown</td>
+                                    <td>Jun 27, 2023</td>
+                                    <td>$324.98</td>
+                                    <td>Processing</td>
+                                </tr>
+                                <tr>
+                                    <td>#ORD-7278</td>
+                                    <td>Sarah Williams</td>
+                                    <td>Jun 26, 2023</td>
+                                    <td>$154.99</td>
+                                    <td>Shipped</td>
+                                </tr>
+                                <tr>
+                                    <td>#ORD-7277</td>
+                                    <td>David Jones</td>
+                                    <td>Jun 25, 2023</td>
+                                    <td>$199.99</td>
+                                    <td>Delivered</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Incentives Section -->
+                <div class="content-section" id="incentives-section">
+                    <div class="content-header">
+                        <h1>Incentives & Rewards</h1>
+                        <p>Track your performance incentives and rewards</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">$1,240</div>
+                            <div class="stat-label">Total Earned</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$450</div>
+                            <div class="stat-label">Available Now</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$790</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Incentive History</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Jun 15, 2023</td>
+                                    <td>Q2 Sales Bonus</td>
+                                    <td>$500</td>
+                                    <td>Paid</td>
+                                </tr>
+                                <tr>
+                                    <td>May 30, 2023</td>
+                                    <td>Customer Satisfaction</td>
+                                    <td>$250</td>
+                                    <td>Paid</td>
+                                </tr>
+                                <tr>
+                                    <td>May 15, 2023</td>
+                                    <td>Referral Program</td>
+                                    <td>$300</td>
+                                    <td>Paid</td>
+                                </tr>
+                                <tr>
+                                    <td>Jun 28, 2023</td>
+                                    <td>Q2 Performance</td>
+                                    <td>$450</td>
+                                    <td>Pending</td>
+                                </tr>
+                                <tr>
+                                    <td>Jun 20, 2023</td>
+                                    <td>New Product Launch</td>
+                                    <td>$340</td>
+                                    <td>Pending</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Profile Section -->
+                <div class="content-section" id="profile-section">
+                    <div class="content-header">
+                        <h1>User Profile</h1>
+                        <p>Manage your account settings and preferences</p>
+                    </div>
+                    
+                    <div class="card-grid">
+                        <div class="card">
+                            <div class="card-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h3>Personal Information</h3>
+                            <p>Update your name, email, and other personal details</p>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3>Security</h3>
+                            <p>Change your password and manage security settings</p>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <h3>Notifications</h3>
+                            <p>Configure how you receive alerts and notifications</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Account Details</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Setting</th>
+                                    <th>Value</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Email Address</td>
+                                    <td id="profile-email">user@example.com</td>
+                                    <td><a href="#" style="color: var(--primary);">Update</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Password</td>
+                                    <td>••••••••</td>
+                                    <td><a href="#" style="color: var(--primary);">Change</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Two-Factor Authentication</td>
+                                    <td>Disabled</td>
+                                    <td><a href="#" style="color: var(--primary);">Enable</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Account Status</td>
+                                    <td>Active</td>
+                                    <td><a href="#" style="color: var(--primary);">View</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Cart Section -->
+                <div class="content-section" id="cart-section">
+                    <div class="content-header">
+                        <h1>Shopping Cart</h1>
+                        <p>Review items in your cart and proceed to checkout</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">3</div>
+                            <div class="stat-label">Items in Cart</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$427.97</div>
+                            <div class="stat-label">Total Amount</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$24.99</div>
+                            <div class="stat-label">Shipping</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Cart Items</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Wireless Headphones</td>
+                                    <td>$129.99</td>
+                                    <td>2</td>
+                                    <td>$259.98</td>
+                                </tr>
+                                <tr>
+                                    <td>Running Shoes</td>
+                                    <td>$89.99</td>
+                                    <td>1</td>
+                                    <td>$89.99</td>
+                                </tr>
+                                <tr>
+                                    <td>Water Bottle</td>
+                                    <td>$24.99</td>
+                                    <td>3</td>
+                                    <td>$74.97</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" style="text-align: right; font-weight: 600;">Subtotal</td>
+                                    <td>$424.94</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" style="text-align: right; font-weight: 600;">Shipping</td>
+                                    <td>$24.99</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" style="text-align: right; font-weight: 600;">Total</td>
+                                    <td>$449.93</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div style="text-align: right; margin-top: 1.5rem;">
+                            <button class="btn" style="width: auto; padding: 0.75rem 1.5rem;">Proceed to Checkout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Navigation with added items -->
+            <nav class="bottom-nav">
+                <a class="nav-item active" data-section="home-section">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a class="nav-item" data-section="products-section">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+                <a class="nav-item" data-section="orders-section">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </a>
+                <a class="nav-item" data-section="cart-section">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Cart</span>
+                </a>
+                <a class="nav-item" data-section="incentives-section">
+                    <i class="fas fa-gift"></i>
+                    <span>Incentives</span>
+                </a>
+                <a class="nav-item" data-section="profile-section">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <script>
+        // Original functionality preserved
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const message = document.getElementById('message');
+            
+            message.className = '';
+            message.textContent = 'Logging in...';
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showDashboard(data.user);
+                } else {
+                    message.className = 'error';
+                    message.textContent = data.error || 'Login failed';
+                }
+            } catch (error) {
+                message.className = 'error';
+                message.textContent = 'Network error: ' + error.message;
+            }
+        }
+        
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                showLogin();
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+        
+        function showDashboard(user) {
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('profile-email').textContent = user.email;
+            // Extract name from email for demonstration
+            const userName = user.email.split('@')[0];
+            document.getElementById('user-name').textContent = userName;
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+        
+        function showLogin() {
+            document.getElementById('login-form').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('message').textContent = '';
+        }
+        
+        // Check if user is already logged in
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/session');
+                const data = await response.json();
+                if (response.ok && data.user) {
+                    showDashboard(data.user);
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        }
+        
+        // Navigation functionality
+        function setupNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Update active navigation item
+                    navItems.forEach(nav => {
+                        nav.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // Show the corresponding content section
+                    const sectionId = this.getAttribute('data-section');
+                    contentSections.forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    document.getElementById(sectionId).classList.add('active');
+                });
+            });
+        }
+        
+        // Initialize the application
+        function init() {
+            checkAuth();
+            setupNavigation();
+        }
+        
+        // Run initialization when page loads
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
