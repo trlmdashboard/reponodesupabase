@@ -2,14 +2,26 @@
   "version": 2,
   "builds": [
     {
-      "src": "*.html",
+      "src": "api/config.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**/*",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/public/$1"
     }
-  ]
+  ],
+  "env": {
+    "SUPABASE_URL": "@supabase_url",
+    "SUPABASE_ANON_KEY": "@supabase_anon_key"
+  }
 }
