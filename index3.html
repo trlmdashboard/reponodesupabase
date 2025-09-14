@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+        
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        /* Login Screen */
+        #login-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .app-logo {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .app-logo i {
+            font-size: 50px;
+            color: #6a11cb;
+            background: #f0f5ff;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+        
+        .app-logo h1 {
+            margin-top: 15px;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #6a11cb;
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: #6a11cb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        .login-btn:hover {
+            background: #5a0fb8;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .message.error {
+            background: #fee2e2;
+            color: #dc2626;
+            display: block;
+        }
+        
+        .message.success {
+            background: #d1fae5;
+            color: #059669;
+            display: block;
+        }
+        
+        /* Dashboard */
+        #dashboard {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            background: #f8fafc;
+        }
+        
+        .dashboard-header {
+            background: #6a11cb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-header h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .dashboard-header p {
+            opacity: 0.9;
+        }
+        
+        .dashboard-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+        
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #1f2937;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-card i {
+            font-size: 24px;
+            color: #6a11cb;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .value {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card .label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        
+        .nav-item.active {
+            color: #6a11cb;
+        }
+        
+        .nav-item i {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        /* Page Sections */
+        .page-section {
+            display: none;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+        
+        /* Products Page */
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .product-img {
+            height: 120px;
+            background: #f0f5ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .product-img i {
+            font-size: 40px;
+            color: #6a11cb;
+        }
+        
+        .product-info {
+            padding: 15px;
+        }
+        
+        .product-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .product-price {
+            color: #6a11cb;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        /* Orders Page */
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .order-info {
+            flex: 1;
+        }
+        
+        .order-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-processing {
+            background: #fffbeb;
+            color: #f59e0b;
+        }
+        
+        .status-delivered {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+        
+        /* Incentives Page */
+        .incentive-progress {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #6a11cb;
+            border-radius: 5px;
+        }
+        
+        .reward-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 20px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            body {
+                justify-content: center;
+                padding: 20px;
+            }
+            
+            .container {
+                max-width: 400px;
+                height: 90vh;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="login-screen">
+            <div class="app-logo">
+                <i class="fas fa-store"></i>
+                <h1>Mobile Shop</h1>
+            </div>
+            
+            <div class="login-card">
+                <div id="message" class="message"></div>
+                
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+                
+                <button class="login-btn" onclick="login()">
+                    <span id="login-text">Login</span>
+                    <span id="login-spinner" class="spinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Dashboard -->
+        <div id="dashboard">
+            <div class="dashboard-header">
+                <h1>Welcome, <span id="user-name">User</span></h1>
+                <p>Your one-stop mobile shopping app</p>
+            </div>
+            
+            <div class="dashboard-content">
+                <!-- Home Page -->
+                <div class="page-section active" id="home-page">
+                    <h2 class="section-title">Dashboard</h2>
+                    
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <i class="fas fa-shopping-cart"></i>
+                            <div class="value">3</div>
+                            <div class="label">Pending Orders</div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="value">12</div>
+                            <div class="label">Completed</div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-gift"></i>
+                            <div class="value">$245</div>
+                            <div class="label">Incentives</div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-eye"></i>
+                            <div class="value">28</div>
+                            <div class="label">Products Viewed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Recent Activity</h3>
+                        <p>Your order #1234 has been shipped</p>
+                        <p>New products available in your favorite category</p>
+                    </div>
+                </div>
+                
+                <!-- Products Page -->
+                <div class="page-section" id="products-page">
+                    <h2 class="section-title">Featured Products</h2>
+                    
+                    <div class="product-grid">
+                        <div class="product-card">
+                            <div class="product-img">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-title">Smartphone X</div>
+                                <div class="product-price">$599.99</div>
+                                <button class="login-btn" style="padding: 8px;">Add to Cart</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-card">
+                            <div class="product-img">
+                                <i class="fas fa-headphones"></i>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-title">Wireless Headphones</div>
+                                <div class="product-price">$129.99</div>
+                                <button class="login-btn" style="padding: 8px;">Add to Cart</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-card">
+                            <div class="product-img">
+                                <i class="fas fa-smartwatch"></i>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-title">Smart Watch</div>
+                                <div class="product-price">$249.99</div>
+                                <button class="login-btn" style="padding: 8px;">Add to Cart</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-card">
+                            <div class="product-img">
+                                <i class="fas fa-tablet-alt"></i>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-title">Tablet Pro</div>
+                                <div class="product-price">$429.99</div>
+                                <button class="login-btn" style="padding: 8px;">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Orders Page -->
+                <div class="page-section" id="orders-page">
+                    <h2 class="section-title">Your Orders</h2>
+                    
+                    <div class="card">
+                        <div class="order-item">
+                            <div class="order-info">
+                                <strong>Order #1234</strong>
+                                <p>2 x Smartphone X</p>
+                                <p>Date: Oct 15, 2023</p>
+                            </div>
+                            <div class="order-status status-processing">Processing</div>
+                        </div>
+                        
+                        <div class="order-item">
+                            <div class="order-info">
+                                <strong>Order #1233</strong>
+                                <p>1 x Wireless Headphones</p>
+                                <p>Date: Oct 12, 2023</p>
+                            </div>
+                            <div class="order-status status-delivered">Delivered</div>
+                        </div>
+                        
+                        <div class="order-item">
+                            <div class="order-info">
+                                <strong>Order #1232</strong>
+                                <p>1 x Smart Watch</p>
+                                <p>Date: Oct 10, 2023</p>
+                            </div>
+                            <div class="order-status status-delivered">Delivered</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Incentives Page -->
+                <div class="page-section" id="incentives-page">
+                    <h2 class="section-title">Your Incentives</h2>
+                    
+                    <div class="card">
+                        <h3>Reward Points</h3>
+                        <p>You have <strong>450 points</strong></p>
+                        
+                        <div class="incentive-progress">
+                            <div class="progress-bar" style="width: 45%"></div>
+                        </div>
+                        <p>45% towards next reward tier</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Available Rewards</h3>
+                        
+                        <div class="reward-item">
+                            <div>
+                                <strong>$5 Discount</strong>
+                                <p>100 points</p>
+                            </div>
+                            <button class="login-btn" style="padding: 8px;">Redeem</button>
+                        </div>
+                        
+                        <div class="reward-item">
+                            <div>
+                                <strong>Free Shipping</strong>
+                                <p>200 points</p>
+                            </div>
+                            <button class="login-btn" style="padding: 8px;">Redeem</button>
+                        </div>
+                        
+                        <div class="reward-item">
+                            <div>
+                                <strong>$20 Discount</strong>
+                                <p>500 points</p>
+                            </div>
+                            <button class="login-btn" style="padding: 8px;">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Navigation -->
+            <div class="bottom-nav">
+                <a href="#" class="nav-item active" onclick="showPage('home-page')">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showPage('products-page')">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Products</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showPage('orders-page')">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showPage('incentives-page')">
+                    <i class="fas fa-gift"></i>
+                    <span>Incentives</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const messageEl = document.getElementById('message');
+        const loginScreen = document.getElementById('login-screen');
+        const dashboard = document.getElementById('dashboard');
+        const userName = document.getElementById('user-name');
+        const navItems = document.querySelectorAll('.nav-item');
+        const pageSections = document.querySelectorAll('.page-section');
+        
+        // Login function
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple validation
+            if (!email || !password) {
+                showMessage('Please enter both email and password', 'error');
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('login-text').style.display = 'none';
+            document.getElementById('login-spinner').style.display = 'inline-block';
+            
+            // Simulate API call (replace with actual Supabase API call)
+            setTimeout(() => {
+                // For demo purposes, assume login is successful
+                // In a real app, you would verify credentials with Supabase
+                showDashboard();
+                
+                // Hide loading state
+                document.getElementById('login-text').style.display = 'inline-block';
+                document.getElementById('login-spinner').style.display = 'none';
+            }, 1500);
+        }
+        
+        // Show dashboard
+        function showDashboard() {
+            const email = document.getElementById('email').value;
+            const name = email.split('@')[0]; // Extract name from email
+            userName.textContent = name;
+            
+            loginScreen.style.display = 'none';
+            dashboard.style.display = 'flex';
+            
+            showMessage('Login successful!', 'success');
+        }
+        
+        // Show page based on navigation
+        function showPage(pageId) {
+            // Update active navigation item
+            navItems.forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Show corresponding page
+            pageSections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === pageId) {
+                    section.classList.add('active');
+                }
+            });
+        }
+        
+        // Show message
+        function showMessage(message, type) {
+            messageEl.textContent = message;
+            messageEl.className = `message ${type}`;
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                messageEl.textContent = '';
+                messageEl.className = 'message';
+            }, 5000);
+        }
+        
+        // Allow form submission with Enter key
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>
