@@ -522,7 +522,13 @@
 
     <script>
         // Preserve the original functionality
-        async function login() {
+       
+
+
+
+
+        /////////////////////////////////////////////////
+         async function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const message = document.getElementById('message');
@@ -531,45 +537,84 @@
             message.textContent = 'Logging in...';
             
             try {
-                // For demo purposes, we'll simulate a successful login
-                // In a real application, you would use the fetch API as in the original code
-                setTimeout(() => {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
                     message.className = 'success';
                     message.textContent = 'Login successful! Redirecting...';
-                    setTimeout(() => showDashboard({email: email}), 1500);
-                }, 1000);
-                
+                    setTimeout(() => showDashboard(data.user), 1500);
+                } else {
+                    message.className = 'error';
+                    message.textContent = data.error || 'Login failed';
+                }
             } catch (error) {
                 message.className = 'error';
                 message.textContent = 'Network error: ' + error.message;
             }
         }
         
-        function logout() {
-            // For demo purposes, we'll simulate logout
-            // In a real application, you would use the fetch API as in the original code
-            showLogin();
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                showLogin();
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
         }
         
         function showDashboard(user) {
             document.getElementById('user-email').textContent = user.email;
+            document.getElementById('user-name').textContent = user.name || user.email.split('@')[0];
+            document.getElementById('user-initial').textContent = user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase();
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('dashboard').style.display = 'flex';
-            document.querySelector('.container').style.display = 'none';
         }
         
         function showLogin() {
             document.getElementById('login-form').style.display = 'block';
             document.getElementById('dashboard').style.display = 'none';
-            document.querySelector('.container').style.display = 'block';
             document.getElementById('message').textContent = '';
         }
         
+        // Check if user is already logged in
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/session');
+                const data = await response.json();
+                if (response.ok && data.user) {
+                    showDashboard(data.user);
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        }
+        
+        checkAuth();
+
         // Add active class to bottom nav items
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
                 document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
+            });
+        });
+
+        // Add task completion functionality
+        document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const taskItem = this.closest('.task-item');
+                if (this.checked) {
+                    taskItem.style.opacity = '0.7';
+                } else {
+                    taskItem.style.opacity = '1';
+                }
             });
         });
     </script>
