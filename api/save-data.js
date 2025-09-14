@@ -1,11 +1,10 @@
 // api/save-data.js
 export default async function handler(req, res) {
-  // Enable CORS for frontend requests
+  // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight requests
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -15,64 +14,46 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('Environment variables check:');
-    console.log('SUPABASE_URL exists:', !!process.env.SUPABASE_URL);
-    console.log('SUPABASE_KEY exists:', !!process.env.SUPABASE_KEY);
-
-    // Import Supabase client
-    const { createClient } = await import('@supabase/supabase-js');
-    
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_KEY;
     
     if (!supabaseUrl || !supabaseKey) {
-      console.error('Missing environment variables:');
-      console.error('SUPABASE_URL:', supabaseUrl);
-      console.error('SUPABASE_KEY:', supabaseKey ? 'Exists (hidden)' : 'Missing');
-      return res.status(500).json({ error: 'Server configuration error - missing credentials' });
+      return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Parse request body
+    const { name, email } = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     
-    // Parse JSON body
-    let body;
-    try {
-      body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      return res.status(400).json({ error: 'Invalid JSON format' });
-    }
-
-    const { name, email } = body;
-    
-    console.log('Received data:', { name, email });
-
     if (!name || !email) {
-      return res.status(400).json({ 
-        error: 'Name and email are required',
-        received: { name, email }
-      });
+      return res.status(400).json({ error: 'Name and email are required' });
     }
 
-    // Insert data into Supabase
-    const { data, error } = await supabase
-      .from('users')
-      .insert([{ 
-        name: name.trim(), 
-        email: email.trim().toLowerCase(), 
-        created_at: new Date().toISOString() 
-      }])
-      .select();
+    // Use Supabase REST API directly with fetch
+    const response = await fetch(`${supabaseUrl}/rest/v1/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        created_at: new Date().toISOString()
+      })
+    });
 
-    if (error) {
-      console.error('Supabase error details:', error);
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Supabase API error:', response.status, errorData);
       return res.status(500).json({ 
-        error: 'Failed to save data to database',
-        details: error.message 
+        error: 'Failed to save data',
+        details: errorData 
       });
     }
 
-    console.log('Successfully saved data:', data);
+    const data = await response.json();
     
     res.status(200).json({ 
       success: true, 
@@ -81,11 +62,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Unexpected server error:', error);
-    console.error('Error stack:', error.stack);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message 
-    });
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Internal server error: ' + error.message });
   }
 }
