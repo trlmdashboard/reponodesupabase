@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Login Portal</title>
+    <title>Secure Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -42,10 +42,16 @@
             overflow: hidden;
             box-shadow: var(--card-shadow);
             transition: var(--smooth-transition);
+            height: 90vh;
+            max-height: 800px;
+            position: relative;
         }
 
+        /* Login Screen Styles (unchanged) */
         .login-screen {
             padding: 30px;
+            height: 100%;
+            overflow-y: auto;
         }
 
         .app-logo {
@@ -258,56 +264,120 @@
             display: block;
         }
 
+        /* Dashboard Styles - Completely Redesigned */
         .dashboard {
             display: none;
             flex-direction: column;
-            height: 100vh;
+            height: 100%;
             background: #f8fafc;
+            position: relative;
         }
 
         .dashboard-header {
             background: white;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        .dashboard-header h2 {
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        .user-details h3 {
+            font-size: 16px;
             color: var(--dark);
-            margin-bottom: 5px;
+            margin-bottom: 2px;
+        }
+
+        .user-details p {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-actions i {
+            font-size: 20px;
+            color: var(--gray);
+            cursor: pointer;
         }
 
         .dashboard-content {
             flex: 1;
-            padding: 25px;
+            padding: 20px;
             overflow-y: auto;
+            padding-bottom: 80px; /* Space for bottom nav */
         }
 
-        .welcome-card {
+        .welcome-banner {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 25px;
+            padding: 20px;
+            margin-bottom: 20px;
             box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
         }
 
-        .welcome-card h3 {
+        .welcome-banner::before {
+            content: "";
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .welcome-banner h2 {
+            font-size: 20px;
             margin-bottom: 10px;
-            font-size: 22px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-banner p {
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 15px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .stat-card {
             background: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
         }
@@ -319,27 +389,37 @@
         }
 
         .stat-card h4 {
-            font-size: 24px;
+            font-size: 20px;
             margin-bottom: 5px;
             color: var(--dark);
         }
 
         .stat-card p {
             color: var(--gray);
-            font-size: 14px;
+            font-size: 12px;
         }
 
-        .recent-activity {
+        .section-title {
+            font-size: 18px;
+            color: var(--dark);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .view-all {
+            font-size: 12px;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .activity-list {
             background: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .recent-activity h3 {
-            margin-bottom: 15px;
-            color: var(--dark);
-            font-size: 18px;
+            margin-bottom: 20px;
         }
 
         .activity-item {
@@ -380,12 +460,68 @@
             color: var(--gray);
         }
 
+        .activity-time {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        .tasks-list {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-checkbox {
+            margin-right: 15px;
+        }
+
+        .task-details {
+            flex: 1;
+        }
+
+        .task-details h4 {
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: var(--dark);
+        }
+
+        .task-details p {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .task-priority {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: #f0f5ff;
+            color: var(--primary);
+        }
+
+        /* Bottom Navigation */
         .bottom-nav {
             background: white;
             display: flex;
             justify-content: space-around;
             padding: 15px;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
         }
 
         .nav-item {
@@ -413,7 +549,10 @@
 
         @media (max-width: 480px) {
             .container {
-                border-radius: 12px;
+                height: 100vh;
+                max-height: unset;
+                border-radius: 0;
+                max-width: 100%;
             }
             
             .login-screen {
@@ -425,8 +564,7 @@
             }
             
             .dashboard {
-                height: 100vh;
-                max-height: -webkit-fill-available;
+                height: 100%;
             }
         }
 
@@ -502,14 +640,25 @@
         <!-- Dashboard -->
         <div id="dashboard" class="dashboard">
             <div class="dashboard-header">
-                <h2>Dashboard</h2>
-                <p>Welcome, <span id="user-email"></span></p>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <span id="user-initial">U</span>
+                    </div>
+                    <div class="user-details">
+                        <h3 id="user-name">User Name</h3>
+                        <p id="user-email">user@example.com</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <i class="fas fa-bell"></i>
+                    <i class="fas fa-cog"></i>
+                </div>
             </div>
             
             <div class="dashboard-content">
-                <div class="welcome-card">
-                    <h3>Hello there!</h3>
-                    <p>You have successfully logged into your account.</p>
+                <div class="welcome-banner">
+                    <h2>Good morning!</h2>
+                    <p>You have 3 new notifications and 2 pending tasks</p>
                 </div>
                 
                 <div class="stats-grid">
@@ -535,16 +684,21 @@
                     </div>
                 </div>
                 
-                <div class="recent-activity">
+                <div class="section-title">
                     <h3>Recent Activity</h3>
+                    <a href="#" class="view-all">View all</a>
+                </div>
+                
+                <div class="activity-list">
                     <div class="activity-item">
                         <div class="activity-icon">
                             <i class="fas fa-user-plus"></i>
                         </div>
                         <div class="activity-details">
                             <h4>New user registered</h4>
-                            <p>2 minutes ago</p>
+                            <p>John Doe joined the platform</p>
                         </div>
+                        <div class="activity-time">2m ago</div>
                     </div>
                     <div class="activity-item">
                         <div class="activity-icon">
@@ -552,8 +706,9 @@
                         </div>
                         <div class="activity-details">
                             <h4>New order placed</h4>
-                            <p>15 minutes ago</p>
+                            <p>Order #3245 for $125.99</p>
                         </div>
+                        <div class="activity-time">15m ago</div>
                     </div>
                     <div class="activity-item">
                         <div class="activity-icon">
@@ -561,17 +716,41 @@
                         </div>
                         <div class="activity-details">
                             <h4>New comment received</h4>
-                            <p>45 minutes ago</p>
+                            <p>Sarah commented on your post</p>
                         </div>
+                        <div class="activity-time">45m ago</div>
                     </div>
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-check-circle"></i>
+                </div>
+                
+                <div class="section-title">
+                    <h3>My Tasks</h3>
+                    <a href="#" class="view-all">View all</a>
+                </div>
+                
+                <div class="tasks-list">
+                    <div class="task-item">
+                        <input type="checkbox" class="task-checkbox">
+                        <div class="task-details">
+                            <h4>Prepare monthly report</h4>
+                            <p>Due tomorrow</p>
                         </div>
-                        <div class="activity-details">
-                            <h4>Project completed</h4>
-                            <p>1 hour ago</p>
+                        <div class="task-priority">High</div>
+                    </div>
+                    <div class="task-item">
+                        <input type="checkbox" class="task-checkbox">
+                        <div class="task-details">
+                            <h4>Client meeting</h4>
+                            <p>Tomorrow at 2:00 PM</p>
                         </div>
+                        <div class="task-priority">Medium</div>
+                    </div>
+                    <div class="task-item">
+                        <input type="checkbox" class="task-checkbox" checked>
+                        <div class="task-details">
+                            <h4>Update website content</h4>
+                            <p>Completed</p>
+                        </div>
+                        <div class="task-priority">Low</div>
                     </div>
                 </div>
             </div>
@@ -593,10 +772,6 @@
                 <a href="#" class="nav-item">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
-                </a>
-                <a href="#" class="nav-item" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
                 </a>
             </div>
         </div>
@@ -646,6 +821,8 @@
         
         function showDashboard(user) {
             document.getElementById('user-email').textContent = user.email;
+            document.getElementById('user-name').textContent = user.name || user.email.split('@')[0];
+            document.getElementById('user-initial').textContent = user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase();
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('dashboard').style.display = 'flex';
         }
@@ -673,9 +850,22 @@
 
         // Add active class to bottom nav items
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
                 document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
+            });
+        });
+
+        // Add task completion functionality
+        document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const taskItem = this.closest('.task-item');
+                if (this.checked) {
+                    taskItem.style.opacity = '0.7';
+                } else {
+                    taskItem.style.opacity = '1';
+                }
             });
         });
     </script>
