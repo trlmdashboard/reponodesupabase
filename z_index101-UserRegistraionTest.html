@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure User Registration | Supabase</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .left-panel h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        
+        .left-panel p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .right-panel {
+            flex: 1;
+            padding: 40px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            color: #4facfe;
+        }
+        
+        .logo i {
+            font-size: 32px;
+            margin-right: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #4facfe;
+            outline: none;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+        }
+        
+        .login-link a {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .password-strength {
+            height: 5px;
+            background: #eee;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .strength-meter {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s, background 0.3s;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .left-panel {
+                padding: 30px 20px;
+            }
+            
+            .right-panel {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <h2>Secure Registration</h2>
+            <p>Create an account with enhanced security. All sensitive operations are handled server-side to protect your data.</p>
+            <div style="margin-top: 30px;">
+                <i class="fas fa-lock" style="font-size: 60px; opacity: 0.8;"></i>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="logo">
+                <i class="fas fa-database"></i>
+                <h1>Secure Auth</h1>
+            </div>
+            
+            <form id="registration-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Create a strong password">
+                    <div class="password-strength">
+                        <div class="strength-meter" id="password-strength-meter"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" required placeholder="Enter your full name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="login_id">Login ID</label>
+                    <input type="text" id="login_id" required placeholder="Choose a login ID">
+                </div>
+                
+                <div class="form-group">
+                    <label for="user_type">User Type</label>
+                    <select id="user_type" required>
+                        <option value="">Select user type</option>
+                        <option value="admin">Admin</option>
+                        <option value="manager">Manager</option>
+                        <option value="user">Regular User</option>
+                        <option value="guest">Guest</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fpc_id">FPC ID (optional)</label>
+                    <input type="number" id="fpc_id" placeholder="Enter FPC ID">
+                </div>
+                
+                <div class="form-group">
+                    <label for="lsc_id">LSC ID (optional)</label>
+                    <input type="number" id="lsc_id" placeholder="Enter LSC ID">
+                </div>
+                
+                <button type="submit">Create Account</button>
+            </form>
+            
+            <div id="message" class="message"></div>
+            
+            <div class="login-link">
+                Already have an account? <a href="#">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Password strength indicator
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthMeter = document.getElementById('password-strength-meter');
+            let strength = 0;
+            
+            if (password.length >= 8) strength += 25;
+            if (/[A-Z]/.test(password)) strength += 25;
+            if (/[0-9]/.test(password)) strength += 25;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+            
+            strengthMeter.style.width = strength + '%';
+            
+            if (strength < 50) {
+                strengthMeter.style.background = '#ff4d4d';
+            } else if (strength < 75) {
+                strengthMeter.style.background = '#ffa64d';
+            } else {
+                strengthMeter.style.background = '#2ecc71';
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('registration-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Get form values
+            const formData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                full_name: document.getElementById('full_name').value,
+                login_id: document.getElementById('login_id').value,
+                user_type: document.getElementById('user_type').value,
+                fpc_id: document.getElementById('fpc_id').value || null,
+                lsc_id: document.getElementById('lsc_id').value || null
+            };
+            
+            const messageEl = document.getElementById('message');
+            const submitBtn = document.querySelector('button[type="submit"]');
+            
+            // Basic validation
+            if (formData.password.length < 8) {
+                messageEl.textContent = 'Password must be at least 8 characters long';
+                messageEl.className = 'message error';
+                messageEl.style.display = 'block';
+                return;
+            }
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating Account...';
+                
+                // Send request to our server-side API
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Show success message
+                    messageEl.textContent = data.message || 'Registration successful! Please check your email for verification.';
+                    messageEl.className = 'message success';
+                    messageEl.style.display = 'block';
+                    
+                    // Reset form
+                    document.getElementById('registration-form').reset();
+                    document.getElementById('password-strength-meter').style.width = '0';
+                } else {
+                    throw new Error(data.error || 'Registration failed');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                messageEl.textContent = error.message || 'An error occurred during registration.';
+                messageEl.className = 'message error';
+                messageEl.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
+            }
+        });
+    </script>
+</body>
+</html>
