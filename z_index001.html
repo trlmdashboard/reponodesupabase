@@ -83,7 +83,7 @@
             messageDiv.className = '';
             
             try {
-                const response = await fetch('/api/login', {
+                const response = await fetch('/api/z_login001', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -106,7 +106,7 @@
                     
                     // Redirect to dashboard after successful login
                     setTimeout(() => {
-                        window.location.href = '/dashboard.html';
+                        window.location.href = '/z_index002_dashboard.html';
                     }, 1000);
                 } else {
                     messageDiv.textContent = result.error || 'Login failed';
