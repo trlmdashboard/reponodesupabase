@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .user-info {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Dashboard</h2>
+        <div id="userInfo" class="user-info">
+            <p>Loading user information...</p>
+        </div>
+        <button onclick="logout()">Logout</button>
+        <div class="links">
+            <a href="/index.html">Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        const token = localStorage.getItem('auth_token');
+        const userData = localStorage.getItem('user_data');
+        
+        if (!token || !userData) {
+            window.location.href = '/login.html';
+        } else {
+            try {
+                const user = JSON.parse(userData);
+                document.getElementById('userInfo').innerHTML = `
+                    <h3>Welcome, ${user.login_id}!</h3>
+                    <p><strong>User ID:</strong> ${user.uid}</p>
+                    <p><strong>Login ID:</strong> ${user.login_id}</p>
+                    <p><strong>Created At:</strong> ${new Date(user.created_at).toLocaleString()}</p>
+                `;
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                window.location.href = '/login.html';
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_data');
+            window.location.href = '/login.html';
+        }
+    </script>
+</body>
+</html>
