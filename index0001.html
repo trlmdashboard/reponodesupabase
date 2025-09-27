@@ -517,12 +517,12 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="email">Email Address</label>
+                    <label for="txt_user_id">User ID</label>
                     <div class="input-with-icon">
                         <div class="input-icon">
                             <i class="fas fa-envelope"></i>
                         </div>
-                        <input type="email" id="email" placeholder="Enter your email address" required>
+                        <input type="email" id="txt_user_id" placeholder="Enter your user ID" required>
                     </div>
                 </div>
                 
@@ -718,7 +718,7 @@
     <script>
         // Original functionality preserved
         async function login() {
-            const email = document.getElementById('email').value;
+            const js_txt_user_id = document.getElementById('txt_user_id').value;
             const password = document.getElementById('password').value;
             const message = document.getElementById('message');
             
@@ -729,7 +729,7 @@
                 const response = await fetch('/api/login2', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ js_txt_user_id, password })
                 });
                 
                 const data = await response.json();
