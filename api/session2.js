@@ -1,10 +1,9 @@
 const { createClient } = require('@supabase/supabase-js');
 
 module.exports = async (req, res) => {
-  // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -23,18 +22,23 @@ module.exports = async (req, res) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data: { session } } = await supabase.auth.getSession();
+    
+    // Get the session from the auth header or cookie
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      
+      if (error || !user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
 
-    if (!session) {
-      return res.status(200).json({ user: null });
+      return res.status(200).json({ user: { id: user.id, email: user.email } });
     }
 
-    res.status(200).json({ 
-      user: { 
-        id: session.user.id, 
-        email: session.user.email 
-      } 
-    });
+    return res.status(401).json({ error: 'Not authenticated' });
+    
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
