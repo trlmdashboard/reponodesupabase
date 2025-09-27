@@ -718,59 +718,48 @@
     <script>
         // Original functionality preserved
         async function login() {
-    const loginId = document.getElementById('loginId').value;
+             const js_txt_user_id = document.getElementById('txt_user_id').value;
     const password = document.getElementById('password').value;
-    const errorMessage = document.getElementById('errorMessage');
-    const loadingMessage = document.getElementById('loadingMessage');
-    const loginBtn = document.getElementById('loginBtn');
-
-    errorMessage.textContent = '';
-    loadingMessage.style.display = 'block';
-    loginBtn.disabled = true;
-    loginBtn.textContent = 'Logging in...';
-
-    if (!loginId || !password) {
-        errorMessage.textContent = 'Please enter both Login ID and password';
-        loadingMessage.style.display = 'none';
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Login';
+    const message = document.getElementById('message');
+    
+    message.className = '';
+    message.textContent = 'Logging in...';
+    
+    // Basic validation
+    if (!js_txt_user_id || !password) {
+        message.className = 'error';
+        message.textContent = 'Please enter both user ID and password';
         return;
     }
-
+    
     try {
-        const response = await fetch('/api/auth?action=login', {
+        const response = await fetch('/api/login2', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                loginId: loginId,
-                password: password
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ js_txt_user_id, password })
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            // Show more detailed error messages
-            if (data.details) {
-                errorMessage.textContent = data.error + ' (' + data.details + ')';
-            } else {
-                errorMessage.textContent = data.error || 'Login failed';
-            }
-            return;
-        }
-
-        showDashboard(data.user);
         
+        const data = await response.json();
+        
+        console.log('Login response:', response.status, data);
+        
+        if (response.ok) {
+            message.className = 'success';
+            message.textContent = 'Login successful!';
+            
+            // Store both user data AND access token
+            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('access_token', data.access_token);
+            
+            setTimeout(() => showDashboard(data.user), 1000);
+        } else {
+            message.className = 'error';
+            message.textContent = data.error || `Login failed (${response.status})`;
+        }
     } catch (error) {
-        errorMessage.textContent = 'Network error. Please try again.';
+        message.className = 'error';
+        message.textContent = 'Network error: ' + error.message;
         console.error('Login error:', error);
-    } finally {
-        loadingMessage.style.display = 'none';
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Login';
     }
 }
         
