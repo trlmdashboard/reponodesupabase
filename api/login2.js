@@ -17,8 +17,9 @@ module.exports = async (req, res) => {
   try {
     const { js_txt_user_id, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password required' });
+    // Fixed: Check for js_txt_user_id instead of email
+    if (!js_txt_user_id || !password) {
+      return res.status(400).json({ error: 'Login ID and password required' });
     }
 
     const supabaseUrl = process.env.SUPABASE_URL;
@@ -29,6 +30,8 @@ module.exports = async (req, res) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // 1st part: Get custom user
     const { data: customUser, error: userError } = await supabase
       .from('01_users')
       .select('uid, login_id')
@@ -36,42 +39,38 @@ module.exports = async (req, res) => {
       .single();
 
     if (userError || !customUser) {
-      return Response.json({ error: 'Invalid login credentials' }, { status: 401 });
+      return res.status(401).json({ error: 'Invalid login credentials' }); // Fixed: use res.json()
     }
 
-    //---2nd part
-     const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(
+    // 2nd part: Get auth user by UID
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(
       customUser.uid
     );
 
     if (authError || !authUser.user) {
-      return Response.json({ error: 'Invalid login credentials' }, { status: 401 });
+      return res.status(401).json({ error: 'Invalid login credentials' }); // Fixed: use res.json()
     }
 
     const email = authUser.user.email;
 
-
-    // 3rd part
-     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+    // 3rd part: Sign in with password
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
     });
 
     if (signInError) {
-      return Response.json({ error: 'Invalid login credentials' }, { status: 401 });
+      return res.status(401).json({ error: 'Invalid login credentials' }); // Fixed: use res.json()
     }
 
-
-    if (error) {
-      return res.status(401).json({ error: error.message });
-    }
-
+    // Success response - use signInData instead of undefined 'data'
     res.status(200).json({ 
       user: { 
-        id: data.user.id, 
-        email: data.user.email 
+        id: signInData.user.id, 
+        email: signInData.user.email 
       } 
     });
+    
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
