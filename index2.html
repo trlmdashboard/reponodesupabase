@@ -83,15 +83,34 @@
         
         // Check if user is already logged in
         async function checkAuth() {
-            try {
-                const response = await fetch('/api/session');
-                const data = await response.json();
-                if (response.ok && data.user) {
-                    showDashboard(data.user);
+           const userData = localStorage.getItem('user');
+    const accessToken = localStorage.getItem('access_token');
+    
+    if (userData && accessToken) {
+        // Verify the token is still valid by making an API call
+        try {
+            const response = await fetch('/api/session2', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
                 }
-            } catch (error) {
-                console.error('Auth check failed:', error);
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                showDashboard(data.user);
+                return;
+            } else {
+                // Token is invalid, clear storage and show login
+                localStorage.removeItem('user');
+                localStorage.removeItem('access_token');
             }
+        } catch (error) {
+            console.log('Session check failed:', error);
+        }
+    }
+    
+    // If we get here, either no stored data or token is invalid
+    showLogin();
         }
         
         checkAuth();
