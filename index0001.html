@@ -718,7 +718,7 @@
     <script>
         // Original functionality preserved
         async function login() {
-    const js_txt_user_id = document.getElementById('txt_user_id').value;
+             const js_txt_user_id = document.getElementById('txt_user_id').value;
     const password = document.getElementById('password').value;
     const message = document.getElementById('message');
     
@@ -741,11 +741,16 @@
         
         const data = await response.json();
         
-        console.log('Login response:', response.status, data); // Debug log
+        console.log('Login response:', response.status, data);
         
         if (response.ok) {
             message.className = 'success';
             message.textContent = 'Login successful!';
+            
+            // Store both user data AND access token
+            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('access_token', data.access_token);
+            
             setTimeout(() => showDashboard(data.user), 1000);
         } else {
             message.className = 'error';
