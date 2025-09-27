@@ -69,6 +69,7 @@ module.exports = async (req, res) => {
         id: signInData.user.id, 
         email: signInData.user.email 
       } 
+      access_token: signInData.session.access_token // Add this line
     });
     
   } catch (error) {
