@@ -787,15 +787,28 @@
         
         // Check if user is already logged in
         async function checkAuth() {
-            try {
-                const response = await fetch('/api/session2');
-                const data = await response.json();
-                if (response.ok && data.user) {
-                    showDashboard(data.user);
+              const userData = localStorage.getItem('user');
+                if (userData) {
+                    showDashboard(JSON.parse(userData));
+                    return;
                 }
-            } catch (error) {
-                console.error('Auth check failed:', error);
-            }
+                
+                // Fallback to API check
+                try {
+                    const response = await fetch('/api/session2');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.user) {
+                            localStorage.setItem('user', JSON.stringify(data.user));
+                            showDashboard(data.user);
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    console.log('Session check failed, showing login form');
+                }
+                
+                showLogin();
         }
         
         // Navigation functionality
