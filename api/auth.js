@@ -56,7 +56,7 @@ function clearSessionCookie(res) {
     res.setHeader('Set-Cookie', 'session_token=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0');
 }
 
-// Login handler
+// Login handler - UPDATED TO HANDLE THE SPECIFIC ERROR
 async function handleLogin(req, res) {
     try {
         const { loginId, password } = req.body;
@@ -65,6 +65,8 @@ async function handleLogin(req, res) {
             return res.status(400).json({ error: 'Login ID and password are required' });
         }
 
+        console.log('Login attempt for loginId:', loginId);
+
         // Step 1: Find user by login_id in 01_users table
         const { data: userData, error: userError } = await supabase
             .from('01_users')
@@ -72,20 +74,43 @@ async function handleLogin(req, res) {
             .eq('login_id', loginId)
             .single();
 
-        if (userError || !userData) {
+        if (userError) {
+            console.log('User lookup error:', userError);
             return res.status(401).json({ error: 'Invalid Login ID or password' });
         }
 
-        // Step 2: Get email from auth.users
+        if (!userData) {
+            console.log('User not found in 01_users table');
+            return res.status(401).json({ error: 'Invalid Login ID or password' });
+        }
+
+        console.log('Found user in 01_users:', userData);
+
+        // Step 2: Try to get email from auth.users using the uid
         const { data: authUser, error: authError } = await supabase
             .from('auth.users')
             .select('email, id')
             .eq('id', userData.uid)
             .single();
 
-        if (authError || !authUser) {
-            return res.status(401).json({ error: 'User not found in authentication system' });
+        if (authError) {
+            console.log('Auth user lookup error:', authError);
+            // If user not found in auth.users, try alternative approach
+            return res.status(401).json({ 
+                error: 'Authentication system error. Please contact administrator.',
+                details: 'User not properly registered in authentication system'
+            });
         }
+
+        if (!authUser) {
+            console.log('User not found in auth.users table, trying direct authentication...');
+            
+            // Alternative approach: Try to authenticate directly using loginId as email
+            // This handles cases where the user might exist with a different mapping
+            return await tryDirectAuthentication(loginId, password, res, userData);
+        }
+
+        console.log('Found user in auth.users:', authUser);
 
         // Step 3: Sign in with email and password
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -94,6 +119,7 @@ async function handleLogin(req, res) {
         });
 
         if (signInError) {
+            console.log('Sign in error:', signInError);
             return res.status(401).json({ error: 'Invalid Login ID or password' });
         }
 
@@ -113,6 +139,67 @@ async function handleLogin(req, res) {
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+// Alternative authentication method
+async function tryDirectAuthentication(loginId, password, res, userData) {
+    try {
+        // Try using loginId as email directly
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: loginId, // Try loginId as email
+            password: password
+        });
+
+        if (signInError) {
+            // If that fails, try to find any user in auth.users that might match
+            const { data: allUsers, error: listError } = await supabase
+                .from('auth.users')
+                .select('email, id')
+                .ilike('email', `%${loginId}%`)
+                .limit(5);
+
+            if (!listError && allUsers && allUsers.length > 0) {
+                console.log('Potential matching users found:', allUsers);
+                return res.status(401).json({ 
+                    error: 'Authentication configuration issue. Please contact administrator.',
+                    details: 'User exists but authentication mapping is incorrect'
+                });
+            }
+
+            return res.status(401).json({ 
+                error: 'Invalid Login ID or password',
+                details: 'Please check your credentials and try again'
+            });
+        }
+
+        // If direct authentication worked, update the 01_users table with correct UID
+        if (signInData.user.id !== userData.uid) {
+            // Update the 01_users table with the correct UID
+            const { error: updateError } = await supabase
+                .from('01_users')
+                .update({ uid: signInData.user.id })
+                .eq('login_id', loginId);
+
+            if (updateError) {
+                console.log('Error updating user UID:', updateError);
+            }
+        }
+
+        setSessionCookie(res, signInData.session.access_token);
+
+        res.status(200).json({
+            success: true,
+            user: {
+                id: signInData.user.id,
+                login_id: userData.login_id,
+                email: signInData.user.email
+            }
+        });
+
+    } catch (error) {
+        console.error('Direct authentication error:', error);
+        res.status(500).json({ error: 'Authentication system error' });
     }
 }
 
@@ -177,6 +264,33 @@ async function handleLogout(req, res) {
     }
 }
 
+// Debug endpoint to check database structure
+async function handleDebug(req, res) {
+    try {
+        // Check 01_users table structure
+        const { data: usersSample, error: usersError } = await supabase
+            .from('01_users')
+            .select('*')
+            .limit(3);
+
+        // Check auth.users accessibility
+        const { data: authSample, error: authError } = await supabase
+            .from('auth.users')
+            .select('id, email')
+            .limit(3);
+
+        res.status(200).json({
+            users_table_sample: usersSample,
+            users_table_error: usersError,
+            auth_table_sample: authSample,
+            auth_table_error: authError
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 // Main request handler
 export default async function handler(req, res) {
     const origin = req.headers.origin;
@@ -210,6 +324,14 @@ export default async function handler(req, res) {
             case 'logout':
                 if (req.method === 'POST') {
                     await handleLogout(req, res);
+                } else {
+                    res.status(405).json({ error: 'Method not allowed' });
+                }
+                break;
+
+            case 'debug':
+                if (req.method === 'GET') {
+                    await handleDebug(req, res);
                 } else {
                     res.status(405).json({ error: 'Method not allowed' });
                 }
