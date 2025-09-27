@@ -1,69 +1,50 @@
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-
+module.exports = async (req, res) => {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
-);
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
-export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { loginId, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!loginId || !password) {
-      return res.status(400).json({ error: 'Login ID and password are required' });
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
     }
 
-    // Step 1: Find user by login_id in 01_users table
-    const { data: customUser, error: userError } = await supabase
-      .from('01_users')
-      .select('uid, login_id')
-      .eq('login_id', loginId)
-      .single();
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_KEY;
 
-    if (userError || !customUser) {
-      return res.status(401).json({ error: 'Invalid login credentials' });
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({ error: 'Server misconfigured' });
     }
 
-    // Step 2: Get email from Supabase auth using the uid
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(
-      customUser.uid
-    );
-
-    if (authError || !authUser.user) {
-      return res.status(401).json({ error: 'Invalid login credentials' });
-    }
-
-    const email = authUser.user.email;
-
-    // Step 3: Sign in with email and password
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
     });
 
-    if (signInError) {
-      return res.status(401).json({ error: 'Invalid login credentials' });
+    if (error) {
+      return res.status(401).json({ error: error.message });
     }
 
-    // Step 4: Return success with user data
-    res.status(200).json({
-      success: true,
-      user: {
-        uid: signInData.user.id,
-        login_id: customUser.login_id,
-        email: signInData.user.email,
-      },
-      session: signInData.session,
+    res.status(200).json({ 
+      user: { 
+        id: data.user.id, 
+        email: data.user.email 
+      } 
     });
-
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Server error' });
   }
-}
+};
