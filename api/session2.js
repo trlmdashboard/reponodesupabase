@@ -24,20 +24,21 @@ module.exports = async (req, res) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     // Get the session from the auth header or cookie
-    const authHeader = req.headers.authorization;
+   const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      
-      const { data: { user }, error } = await supabase.auth.getUser(token);
-      
-      if (error || !user) {
-        return res.status(401).json({ error: 'Not authenticated' });
-      }
-
-      return res.status(200).json({ user: { id: user.id, email: user.email } });
+        const token = authHeader.substring(7);
+        
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        
+        if (error || !user) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+    
+        return res.status(200).json({ user: { id: user.id, email: user.email } });
     }
 
-    return res.status(401).json({ error: 'Not authenticated' });
+// If no auth header, just return 401 without error
+return res.status(401).json({ error: 'Not authenticated' });
     
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
