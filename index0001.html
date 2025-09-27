@@ -718,33 +718,45 @@
     <script>
         // Original functionality preserved
         async function login() {
-            const js_txt_user_id = document.getElementById('txt_user_id').value;
-            const password = document.getElementById('password').value;
-            const message = document.getElementById('message');
-            
-            message.className = '';
-            message.textContent = 'Logging in...';
-            
-            try {
-                const response = await fetch('/api/login2', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ js_txt_user_id, password })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showDashboard(data.user);
-                } else {
-                    message.className = 'error';
-                    message.textContent = data.error || 'Login failed';
-                }
-            } catch (error) {
-                message.className = 'error';
-                message.textContent = 'Network error: ' + error.message;
-            }
+    const js_txt_user_id = document.getElementById('txt_user_id').value;
+    const password = document.getElementById('password').value;
+    const message = document.getElementById('message');
+    
+    message.className = '';
+    message.textContent = 'Logging in...';
+    
+    // Basic validation
+    if (!js_txt_user_id || !password) {
+        message.className = 'error';
+        message.textContent = 'Please enter both user ID and password';
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/login2', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ js_txt_user_id, password })
+        });
+        
+        const data = await response.json();
+        
+        console.log('Login response:', response.status, data); // Debug log
+        
+        if (response.ok) {
+            message.className = 'success';
+            message.textContent = 'Login successful!';
+            setTimeout(() => showDashboard(data.user), 1000);
+        } else {
+            message.className = 'error';
+            message.textContent = data.error || `Login failed (${response.status})`;
         }
+    } catch (error) {
+        message.className = 'error';
+        message.textContent = 'Network error: ' + error.message;
+        console.error('Login error:', error);
+    }
+}
         
         async function logout() {
             try {
