@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { email, password } = req.body;
+    const { js_txt_user_id, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
@@ -29,10 +29,38 @@ module.exports = async (req, res) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
+    const { data: customUser, error: userError } = await supabase
+      .from('01_users')
+      .select('uid, login_id')
+      .eq('login_id', js_txt_user_id)
+      .single();
+
+    if (userError || !customUser) {
+      return Response.json({ error: 'Invalid login credentials' }, { status: 401 });
+    }
+
+    //---2nd part
+     const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(
+      customUser.uid
+    );
+
+    if (authError || !authUser.user) {
+      return Response.json({ error: 'Invalid login credentials' }, { status: 401 });
+    }
+
+    const email = authUser.user.email;
+
+
+    // 3rd part
+     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
     });
+
+    if (signInError) {
+      return Response.json({ error: 'Invalid login credentials' }, { status: 401 });
+    }
+
 
     if (error) {
       return res.status(401).json({ error: error.message });
