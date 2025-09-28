@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .dashboard {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .user-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>Dashboard</h1>
+        <div id="userInfo" class="user-info">
+            <p>Loading user information...</p>
+        </div>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        // Check authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            const isAuthenticated = sessionStorage.getItem('isAuthenticated');
+            const userData = sessionStorage.getItem('user');
+
+            if (!isAuthenticated || !userData) {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            try {
+                const user = JSON.parse(userData);
+                document.getElementById('userInfo').innerHTML = `
+                    <h3>Welcome, ${user.login_id}!</h3>
+                    <p><strong>User ID:</strong> ${user.id || 'N/A'}</p>
+                    <p><strong>Login ID:</strong> ${user.login_id}</p>
+                    <!-- Add more user fields as needed -->
+                `;
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                window.location.href = '/index.html';
+            }
+        });
+
+        function logout() {
+            sessionStorage.removeItem('user');
+            sessionStorage.removeItem('isAuthenticated');
+            window.location.href = '/index.html';
+        }
+    </script>
+</body>
+</html>
