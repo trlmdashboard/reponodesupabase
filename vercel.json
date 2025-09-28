@@ -11,5 +11,10 @@
   "devDependencies": {
     "vercel": "^28.0.0"
   },
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/api/.*", "dest": "/api/login.js" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ],
   "installCommand": "npm install"
 }
