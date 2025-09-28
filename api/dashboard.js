@@ -3,9 +3,9 @@ module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'text/html');
   
   // Get message from query parameters
-  const urlParams = new URLSearchParams(req.url.split('?')[1]);
-  const message = urlParams.get('message');
-  const type = urlParams.get('type');
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const message = url.searchParams.get('message');
+  const type = url.searchParams.get('type');
 
   const html = `
 <!DOCTYPE html>
@@ -57,7 +57,7 @@ module.exports = async (req, res) => {
 <body>
     <div class="dashboard">
         <h1>Dashboard</h1>
-        ${message ? `<div class="message ${type}">${decodeURIComponent(message)}</div>` : ''}
+        ${message ? `<div class="message ${type || 'success'}">${decodeURIComponent(message)}</div>` : ''}
         <p>You have successfully logged in!</p>
         <a href="/" class="logout-btn">Logout</a>
     </div>
