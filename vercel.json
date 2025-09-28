@@ -16,13 +16,17 @@
       "dest": "/index.html"
     },
     {
-      "src": "/login",
+      "src": "/api/login",
       "methods": ["POST"],
       "dest": "/api/login.js"
     },
     {
       "src": "/dashboard",
       "dest": "/api/dashboard.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
