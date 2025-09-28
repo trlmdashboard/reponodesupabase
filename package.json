@@ -1,0 +1,14 @@
+{
+  "name": "supabase-login-vercel",
+  "version": "1.0.0",
+  "description": "Simple login with Supabase and Vercel",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.5.0"
+  }
+}
