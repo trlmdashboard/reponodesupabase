@@ -517,12 +517,12 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="txt_user_id">User ID</label>
+                    <label for="email">Email Address</label>
                     <div class="input-with-icon">
                         <div class="input-icon">
                             <i class="fas fa-envelope"></i>
                         </div>
-                        <input type="email" id="txt_user_id" placeholder="Enter your user ID" required>
+                        <input type="email" id="email" placeholder="Enter your email address" required>
                     </div>
                 </div>
                 
@@ -718,50 +718,33 @@
     <script>
         // Original functionality preserved
         async function login() {
-             const js_txt_user_id = document.getElementById('txt_user_id').value;
-    const password = document.getElementById('password').value;
-    const message = document.getElementById('message');
-    
-    message.className = '';
-    message.textContent = 'Logging in...';
-    
-    // Basic validation
-    if (!js_txt_user_id || !password) {
-        message.className = 'error';
-        message.textContent = 'Please enter both user ID and password';
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/login2', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ js_txt_user_id, password })
-        });
-        
-        const data = await response.json();
-        
-        console.log('Login response:', response.status, data);
-        
-        if (response.ok) {
-            message.className = 'success';
-            message.textContent = 'Login successful!';
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const message = document.getElementById('message');
             
-            // Store both user data AND access token
-            localStorage.setItem('user', JSON.stringify(data.user));
-            localStorage.setItem('access_token', data.access_token);
+            message.className = '';
+            message.textContent = 'Logging in...';
             
-            setTimeout(() => showDashboard(data.user), 1000);
-        } else {
-            message.className = 'error';
-            message.textContent = data.error || `Login failed (${response.status})`;
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showDashboard(data.user);
+                } else {
+                    message.className = 'error';
+                    message.textContent = data.error || 'Login failed';
+                }
+            } catch (error) {
+                message.className = 'error';
+                message.textContent = 'Network error: ' + error.message;
+            }
         }
-    } catch (error) {
-        message.className = 'error';
-        message.textContent = 'Network error: ' + error.message;
-        console.error('Login error:', error);
-    }
-}
         
         async function logout() {
             try {
@@ -792,28 +775,15 @@
         
         // Check if user is already logged in
         async function checkAuth() {
-              const userData = localStorage.getItem('user');
-                if (userData) {
-                    showDashboard(JSON.parse(userData));
-                    return;
+            try {
+                const response = await fetch('/api/session');
+                const data = await response.json();
+                if (response.ok && data.user) {
+                    showDashboard(data.user);
                 }
-                
-                // Fallback to API check
-                try {
-                    const response = await fetch('/api/session2');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.user) {
-                            localStorage.setItem('user', JSON.stringify(data.user));
-                            showDashboard(data.user);
-                            return;
-                        }
-                    }
-                } catch (error) {
-                    console.log('Session check failed, showing login form');
-                }
-                
-                showLogin();
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
         }
         
         // Navigation functionality
