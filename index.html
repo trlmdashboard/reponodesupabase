@@ -67,7 +67,8 @@
 <body>
     <div class="login-form">
         <h2>Login</h2>
-        <form method="POST" action="/login">
+        <!-- Fixed: Correct form action to /api/login -->
+        <form method="POST" action="/api/login">
             <div class="form-group">
                 <label for="login_id">Username:</label>
                 <input type="text" id="login_id" name="login_id" required>
@@ -92,7 +93,7 @@
         if (message) {
             const messageDiv = document.getElementById('message');
             messageDiv.textContent = decodeURIComponent(message);
-            messageDiv.className = 'message ' + type;
+            messageDiv.className = 'message ' + (type || 'error');
         }
     </script>
 </body>
