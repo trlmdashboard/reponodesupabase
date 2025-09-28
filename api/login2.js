@@ -15,11 +15,10 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { js_txt_user_id, password } = req.body;
+    const { email, password } = req.body;
 
-    // Fixed: Check for js_txt_user_id instead of email
-    if (!js_txt_user_id || !password) {
-      return res.status(400).json({ error: 'Login ID and password required' });
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
     }
 
     const supabaseUrl = process.env.SUPABASE_URL;
@@ -30,48 +29,21 @@ module.exports = async (req, res) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    // 1st part: Get custom user
-    const { data: customUser, error: userError } = await supabase
-      .from('01_users')
-      .select('uid, login_id')
-      .eq('login_id', js_txt_user_id)
-      .single();
-
-    if (userError || !customUser) {
-      return res.status(401).json({ error: 'Invalid login credentials' }); // Fixed: use res.json()
-    }
-
-    // 2nd part: Get auth user by UID
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(
-      customUser.uid
-    );
-
-    if (authError || !authUser.user) {
-      return res.status(401).json({ error: 'Invalid login credentials' }); // Fixed: use res.json()
-    }
-
-    const email = authUser.user.email;
-
-    // 3rd part: Sign in with password
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
     });
 
-    if (signInError) {
-      return res.status(401).json({ error: 'Invalid login credentials' }); // Fixed: use res.json()
+    if (error) {
+      return res.status(401).json({ error: error.message });
     }
 
-    // Success response - use signInData instead of undefined 'data'
     res.status(200).json({ 
       user: { 
-        id: signInData.user.id, 
-        email: signInData.user.email 
+        id: data.user.id, 
+        email: data.user.email 
       } 
-      access_token: signInData.session.access_token // Add this line
     });
-    
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
