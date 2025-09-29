@@ -807,6 +807,7 @@ async function getUserFromSession(req) {
       .eq('login_id', username)
       .limit(1);
 
+    console.log(users);
     if (error || !users || users.length === 0) {
       return null;
     }
