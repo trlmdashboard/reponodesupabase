@@ -62,7 +62,7 @@ module.exports = async (req, res) => {
         .main-title {
             font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 0px;
         }
         
         .user-info {
