@@ -1,4 +1,5 @@
 
+
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -67,7 +68,15 @@ module.exports = async (req, res) => {
     // Check if user exists and password matches
     if (users && users.length > 0) {
       // Login successful - set a simple session token as cookie and redirect to dashboard
-      const sessionToken = Buffer.from(`${login_id}:${Date.now()}`).toString('base64');
+      //const sessionToken = Buffer.from(`${login_id}:${Date.now()}`).toString('base64');
+      const payload = {
+        userId: login_id,
+        timestamp: Date.now(),
+        demoData: 'DemoData',
+        // Add expiration
+        expires: Date.now() + (60 * 60 * 1000) // 1 hour
+      };
+      const sessionToken = Buffer.from(JSON.stringify(payload)).toString('base64');
       
       res.setHeader('Set-Cookie', `session=${sessionToken}; Path=/; HttpOnly; SameSite=Strict; Max-Age=3600`);
       return res.redirect(302, '/dashboard');
