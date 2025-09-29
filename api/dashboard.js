@@ -431,7 +431,7 @@ module.exports = async (req, res) => {
         <div class="title-content">
             <div class="main-title">LSC CRP</div>
             <div class="user-info">Welcome back, ${userInfo ? userInfo.full_name : 'User'}!</div>
-            <div class="info-line">LSC Name:  ${userInfo ? userInfo['02_fpc'].fpc_id : 'elseTxt'} FPC Name:</div>
+           <!-- <div class="info-line">LSC Name:  ${userInfo ? userInfo['02_fpc'].fpc_id : 'elseTxt'} FPC Name:</div>  -->
              
         </div>
         <a href="/logout" class="logout-btn">
@@ -803,11 +803,11 @@ async function getUserFromSession(req) {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { data: users, error } = await supabase
       .from('01_users')
-      .select('login_id,fpc_id,full_name,02_fpc!left( fpc_id,fpc_name)')
+      .select('login_id,full_name,02_fpc!left(fpc_id,fpc_name)')
       .eq('login_id', username)
       .limit(1);
 
-    console.log(users);
+    
     if (error || !users || users.length === 0) {
       return null;
     }
