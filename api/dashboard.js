@@ -796,7 +796,7 @@ async function getUserFromSession(req) {
     }
 
     const decoded = Buffer.from(sessionToken, 'base64').toString('ascii');
-    const [username] = decoded.split(':');
+    const [username,timestamp,fpc_id] = decoded.split(':');
     
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { data: users, error } = await supabase
