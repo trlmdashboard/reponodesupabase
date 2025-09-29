@@ -426,7 +426,7 @@ module.exports = async (req, res) => {
         <!-- Home Section -->
         <div id="home-section" class="content-section">
             <div class="welcome-section">
-                <h2>Welcome back, ${userInfo ? userInfo.login_id : 'User'}! 👋</h2>
+                 
                 <p>Here's what's happening with your account today.</p>
             </div>
 
