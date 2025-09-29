@@ -29,7 +29,8 @@ module.exports = async (req, res) => {
     }
 
     // Parse the form data
-    let body = '';
+   /* 
+   let body = '';
     for await (const chunk of req) {
       body += chunk.toString();
     }
@@ -37,6 +38,9 @@ module.exports = async (req, res) => {
     const params = new URLSearchParams(body);
     const login_id = params.get('login_id');
     const login_password = params.get('login_password');
+    */
+
+    const { login_id, login_password } = req.body;
 
     // Validate input
     if (!login_id || !login_password) {
