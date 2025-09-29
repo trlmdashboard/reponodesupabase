@@ -757,7 +757,8 @@ async function isAuthenticated(req) {
 
     // Decode the session token to get username
     const decoded = Buffer.from(sessionToken, 'base64').toString('ascii');
-    const [username, timestamp,fpc_id] = decoded.split(':');
+    //const [username, timestamp,fpc_id] = decoded.split(':');
+    const [username] = decoded.split(':');
     
     // Check if session is expired (1 hour)
     const sessionTime = parseInt(timestamp);
