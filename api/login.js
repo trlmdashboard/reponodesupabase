@@ -1,3 +1,4 @@
+
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -55,6 +56,7 @@ module.exports = async (req, res) => {
       .from('01_users')
       .select('login_id, login_password')
       .eq('login_id', login_id)
+      .eq('user_type', 'LSC CRP')
       .eq('login_password', login_password);
 
     if (error) {
