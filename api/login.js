@@ -70,10 +70,9 @@ module.exports = async (req, res) => {
       // Login successful - set a simple session token as cookie and redirect to dashboard
       //const sessionToken = Buffer.from(`${login_id}:${Date.now()}`).toString('base64');
       const payload = {
-        userId: login_id,
-        timestamp: Date.now(),
+        login_id: login_id,
         demoData: login_id,
-        // Add expiration
+        timestamp: Date.now(),
         expires: Date.now() + (60 * 60 * 1000) // 1 hour
       };
       const sessionToken = Buffer.from(JSON.stringify(payload)).toString('base64');
