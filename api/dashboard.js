@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
             top: 0;
             left: 0;
             right: 0;
-            height: 80px; /* Increased height for additional lines */
+            /*height: 80px;  Increased height for additional lines */
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             display: flex;
