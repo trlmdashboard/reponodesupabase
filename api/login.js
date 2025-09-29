@@ -55,7 +55,7 @@ module.exports = async (req, res) => {
     // Query Supabase for user
     const { data: users, error } = await supabase
       .from('01_users')
-      .select('login_id, login_password,fpc_id')
+      .select('login_id, login_password, fpc_id')
       .eq('login_id', login_id)
       .eq('user_type', 'LSC CRP')
       .eq('login_password', login_password);
@@ -68,15 +68,11 @@ module.exports = async (req, res) => {
     // Check if user exists and password matches
     if (users && users.length > 0) {
       // Login successful - set a simple session token as cookie and redirect to dashboard
+      const user = users[0];
+      const fpc_id = user.fpc_id;
       const sessionToken = Buffer.from(`${login_id}:${Date.now()}:${fpc_id}`).toString('base64');
-      /*const payload = {
-        login_id: login_id,
-        demoData: login_id,
-        timestamp: Date.now(),
-        expires: Date.now() + (60 * 60 * 1000) // 1 hour
-      };
-      const sessionToken = Buffer.from(JSON.stringify(payload)).toString('base64'); */
       
+           
       res.setHeader('Set-Cookie', `session=${sessionToken}; Path=/; HttpOnly; SameSite=Strict; Max-Age=3600`);
       return res.redirect(302, '/dashboard');
     } else {
