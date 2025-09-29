@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
       const payload = {
         userId: login_id,
         timestamp: Date.now(),
-        demoData: 'DemoData',
+        demoData: login_id,
         // Add expiration
         expires: Date.now() + (60 * 60 * 1000) // 1 hour
       };
