@@ -431,8 +431,8 @@ module.exports = async (req, res) => {
         <div class="title-content">
             <div class="main-title">LSC CRP</div>
             <div class="user-info">Welcome back, ${userInfo ? userInfo.login_id : 'User'}!</div>
-            <div class="info-line">line1</div>
-            <div class="info-line">line2</div>
+            <div class="info-line">LSC Name:          FPC Name:</div>
+             
         </div>
         <a href="/logout" class="logout-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
