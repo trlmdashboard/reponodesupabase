@@ -803,7 +803,7 @@ async function getUserFromSession(req) {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { data: users, error } = await supabase
       .from('01_users')
-      .select('login_id,fpc_id')
+      .select('login_id,fpc_id,02_fpc!left (fpc_id,fpc_name)')
       .eq('login_id', username)
       .limit(1);
 
