@@ -431,7 +431,7 @@ module.exports = async (req, res) => {
         <div class="title-content">
             <div class="main-title">LSC CRP</div>
             <div class="user-info">Welcome back, ${userInfo ? userInfo.login_id : 'User'}!</div>
-            <div class="info-line">LSC Name:  ${userInfo ? userInfo.demoData : 'elseTxt'} FPC Name:</div>
+            <div class="info-line">LSC Name:  ${userInfo ? userInfo.fpc_id : 'elseTxt'} FPC Name:</div>
              
         </div>
         <a href="/logout" class="logout-btn">
@@ -757,7 +757,7 @@ async function isAuthenticated(req) {
 
     // Decode the session token to get username
     const decoded = Buffer.from(sessionToken, 'base64').toString('ascii');
-    const [username, timestamp] = decoded.split(':');
+    const [username, timestamp,fpc_id] = decoded.split(':');
     
     // Check if session is expired (1 hour)
     const sessionTime = parseInt(timestamp);
