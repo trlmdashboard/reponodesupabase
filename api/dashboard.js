@@ -429,7 +429,7 @@ module.exports = async (req, res) => {
     <!-- Top Title Bar -->
     <div class="title-bar">
         <div class="title-content">
-            <div class="main-title">LSC Sales Management</div>
+            <div class="main-title">LSC CRP</div>
             <div class="user-info">Welcome back, ${userInfo ? userInfo.login_id : 'User'}!</div>
             <div class="info-line">line1</div>
             <div class="info-line">line2</div>
